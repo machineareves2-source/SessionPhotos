@@ -3,11 +3,13 @@
 Plugin indépendant de documentation de session pour Benjamin Mandeau.
 Code et interface originaux ; aucun code ni élément graphique de Big Notes n'est utilisé.
 
-## État de cette livraison
+## Télécharger le VST3 Windows
 
-Ce paquet est le **projet source**, pas un installateur Windows. Le VST3 Windows doit être compilé avec Visual Studio ou le workflow GitHub Actions fourni. Les validations réalisées sont consignées dans VALIDATION.md. La validation réelle dans REAPER Windows et sur le Samsung reste nécessaire.
+Ouvrir [GitHub Actions](https://github.com/machineareves2-source/SessionPhotos/actions/workflows/build.yml), sélectionner une compilation réussie (coche verte), puis télécharger l’artefact **SessionPhotos-Windows-VST3**. Extraire le ZIP : il contient le dossier complet **Session Photos.vst3** et ce mode d’emploi.
 
-## Utilisation après compilation
+Le dépôt contient les sources ; l’artefact GitHub Actions contient le plugin compilé. La validation réelle dans REAPER Windows et sur le téléphone reste nécessaire avant un recall important.
+
+## Installation et utilisation
 
 1. Copier le dossier complet **Session Photos.vst3** dans `C:\Program Files\Common Files\VST3\` (ou un dossier VST3 déjà scanné par REAPER).
 2. Dans REAPER, relancer la recherche des plugins si nécessaire, puis insérer **Session Photos** sur une piste. Le plugin ne modifie pas les échantillons audio.
@@ -57,7 +59,7 @@ ctest --test-dir build -C Release --output-on-failure
 
 Résultat : `build/SessionPhotos_artefacts/Release/VST3/Session Photos.vst3`.
 
-Le workflow `.github/workflows/build.yml` réalise la compilation Windows et les tests, puis fournit le VST3 dans les artefacts. Ce projet n'est pas publié automatiquement sur un compte GitHub.
+Le workflow `.github/workflows/build.yml` réalise la compilation Windows et les tests, puis fournit le VST3 dans les artefacts. Les sources et les compilations sont hébergées dans [machineareves2-source/SessionPhotos](https://github.com/machineareves2-source/SessionPhotos).
 
 ## Architecture et garanties vérifiables
 

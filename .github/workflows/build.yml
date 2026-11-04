@@ -2,6 +2,12 @@ name: Build Session Photos
 on:
   push:
     branches: [main]
+    paths:
+      - 'CMakeLists.txt'
+      - 'Source/**'
+      - 'Web/**'
+      - 'Tests/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,6 +31,7 @@ jobs:
           Copy-Item README.md package/LIRE-MOI.md
           Copy-Item LICENSE package/LICENSE.txt
           Copy-Item THIRD_PARTY.md package/THIRD_PARTY.md
+          "Source correspondant a cette compilation : https://github.com/$env:GITHUB_REPOSITORY/tree/$env:GITHUB_SHA" | Set-Content -Encoding utf8 package/SOURCES.txt
       - uses: actions/upload-artifact@v4
         with:
           name: SessionPhotos-Windows-VST3
