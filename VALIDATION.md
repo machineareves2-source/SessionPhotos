@@ -2,6 +2,12 @@
 
 4 novembre 2026.
 
+## Compilation Windows validée sur GitHub Actions
+
+La compilation Windows x64 et la suite C++ `state_and_network` ont réussi avec Visual Studio sur le commit `a0553ce1292d0e2ed941699d6a8e0d020df7d3a7`.
+
+[Compilation et tests réussis](https://github.com/machineareves2-source/SessionPhotos/actions/runs/41908914379). Le paquet `SessionPhotos-Windows-VST3` contient le VST3 Windows compilé, son mode d'emploi, les licences et le lien vers les sources correspondantes.
+
 ## Vérifié dans l'environnement de développement
 
 - Compilation native Linux du plugin VST3, avec JUCE 8.0.6 et GCC.
@@ -18,7 +24,6 @@
 
 ## À valider sur le matériel cible
 
-- Compilation Windows x64 via Visual Studio / GitHub Actions. Le compilateur de cross-compilation disponible dans cet environnement (MinGW) n'est pas pris en charge par JUCE 8 ; aucun binaire Windows n'est fourni.
 - Chargement et scan du VST3 dans REAPER Windows.
 - Sauvegarde, fermeture complète et réouverture d'un vrai projet REAPER ; test de duplication et de plusieurs instances.
 - Autorisation du pare-feu, choix de la carte réseau, scan du QR code et prise de vue sur le Samsung.

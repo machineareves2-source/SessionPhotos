@@ -1,16 +1,16 @@
 SESSION PHOTOS — VERSION 0.1
 
-Ce ZIP contient le projet source. Il ne contient PAS encore de VST3 Windows installable.
+Le plugin Windows compile et ses tests automatiques passent.
 
-Pour obtenir le plugin sans installer d'outils de programmation sur le PC du studio :
-1. Créer un dépôt GitHub pour SessionPhotos.
-2. Placer le contenu de ce dossier à la racine du dépôt, y compris .github/workflows/build.yml.
-3. Ouvrir l'onglet Actions et le workflow « Build Session Photos ».
-4. Après la réussite de la compilation et des tests, télécharger l'artefact « SessionPhotos-Windows-VST3 ».
-5. Extraire le dossier complet « Session Photos.vst3 » dans C:\Program Files\Common Files\VST3\.
-6. Relancer la recherche des plugins dans REAPER.
+1. Ouvrir https://github.com/machineareves2-source/SessionPhotos/actions/workflows/build.yml
+2. Sélectionner une compilation réussie (coche verte).
+3. Télécharger l'artefact « SessionPhotos-Windows-VST3 » en bas de la page.
+4. Extraire le ZIP et copier le dossier complet « Session Photos.vst3 » dans C:\Program Files\Common Files\VST3\.
+5. Dans REAPER, relancer la recherche des plugins et insérer Session Photos.
+6. Activer le transfert, scanner le QR code avec le téléphone connecté au même réseau, puis envoyer une photo.
+7. Sauvegarder le projet (Ctrl+S).
 
-README.md contient le mode d'emploi complet.
-VALIDATION.md distingue les vérifications réalisées des tests restant à faire sous Windows et sur téléphone.
+Pour un premier essai, fermer et rouvrir le projet afin de vérifier que les photos et les notes sont bien conservées.
 
-Le navigateur du téléphone sert d'application compagnon. Aucun APK ni compte à créer.
+README.md contient le mode d'emploi complet. VALIDATION.md précise les tests réalisés.
+Le navigateur du téléphone sert d'application compagnon : aucun APK ni compte à créer.
