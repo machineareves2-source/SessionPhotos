@@ -1,0 +1,17 @@
+const {chromium}=require('playwright');
+(async()=>{
+const browser=await chromium.launch({headless:true,...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{}),args:['--no-sandbox']});
+const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto(process.env.PHOTO_URL);await page.waitForFunction(()=>document.getElementById('status').textContent.startsWith('Connecté'));
+const image=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=4000;c.height=2000;const g=c.getContext('2d');g.fillStyle='#547968';g.fillRect(0,0,4000,2000);g.fillStyle='#fff';g.font='160px sans-serif';g.fillText('TEST SESSION PHOTOS',180,1050);return c.toDataURL('image/png').split(',')[1]});
+await page.locator('#name').fill('Voix · réglages été');
+await page.locator('#gallery').setInputFiles({name:'test.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')});
+await page.waitForFunction(()=>document.getElementById('status').textContent.includes('reçue'));
+await page.locator('.photo img').waitFor();await page.waitForFunction(()=>document.querySelector('.photo img').naturalWidth===2400);
+if(await page.locator('.photo strong').innerText()!=='Voix · réglages été')throw Error('Unicode title corrupted');
+await page.reload();await page.waitForFunction(()=>document.querySelectorAll('.photo').length===1);
+if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Horizontal overflow');
+if(errors.length)throw Error(errors.join('\n'));
+await page.screenshot({path:process.env.PHOTO_SCREENSHOT||'phone-live.png',fullPage:true});
+console.log('PASS live browser -> C++ HTTP server -> photo store -> gallery after page reload; UTF-8 title; JPEG 2400px; mobile layout');
+await browser.close();})();

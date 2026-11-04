@@ -1,0 +1,33 @@
+name: Build Session Photos
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release --parallel 2
+      - name: State and network tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Package plugin
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force package | Out-Null
+          Copy-Item -LiteralPath "build/SessionPhotos_artefacts/Release/VST3/Session Photos.vst3" -Destination package -Recurse
+          Copy-Item README.md package/LIRE-MOI.md
+          Copy-Item LICENSE package/LICENSE.txt
+          Copy-Item THIRD_PARTY.md package/THIRD_PARTY.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SessionPhotos-Windows-VST3
+          path: package/
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,16 @@
+SESSION PHOTOS — VERSION 0.1
+
+Ce ZIP contient le projet source. Il ne contient PAS encore de VST3 Windows installable.
+
+Pour obtenir le plugin sans installer d'outils de programmation sur le PC du studio :
+1. Créer un dépôt GitHub pour SessionPhotos.
+2. Placer le contenu de ce dossier à la racine du dépôt, y compris .github/workflows/build.yml.
+3. Ouvrir l'onglet Actions et le workflow « Build Session Photos ».
+4. Après la réussite de la compilation et des tests, télécharger l'artefact « SessionPhotos-Windows-VST3 ».
+5. Extraire le dossier complet « Session Photos.vst3 » dans C:\Program Files\Common Files\VST3\.
+6. Relancer la recherche des plugins dans REAPER.
+
+README.md contient le mode d'emploi complet.
+VALIDATION.md distingue les vérifications réalisées des tests restant à faire sous Windows et sur téléphone.
+
+Le navigateur du téléphone sert d'application compagnon. Aucun APK ni compte à créer.

@@ -1,0 +1,13 @@
+const { chromium } = require('playwright');
+const fs=require('fs');
+(async()=>{const browser=await chromium.launch({headless:true,...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{}),args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+let uploads=[];let state={photos:[],bytes:0,revision:0};
+await page.route('http://127.0.0.1:8765/**',async route=>{const u=new URL(route.request().url());if(u.pathname.endsWith('/api/photos'))return route.fulfill({json:state});if(u.pathname.endsWith('/api/upload')){uploads.push(route.request().postDataBuffer());state={photos:[{id:'test',title:'Distressor',notes:'Ratio 4:1',rotation:0}],bytes:uploads[0].length,revision:1};return route.fulfill({status:201,body:'test'});}if(u.pathname.includes('/api/image/'))return route.fulfill({body:uploads[0],contentType:'image/jpeg'});return route.fulfill({body:fs.readFileSync(require('path').join(__dirname,'../../Web/index.html'),'utf8'),contentType:'text/html'});});
+await page.goto('http://127.0.0.1:8765/token/');await page.waitForFunction(()=>document.getElementById('status').textContent.startsWith('Connecté'));
+await page.screenshot({path:'phone-empty.png',fullPage:true});
+const png=await page.evaluate(async()=>{const c=document.createElement('canvas');c.width=4000;c.height=2000;const g=c.getContext('2d');g.fillStyle='#47675a';g.fillRect(0,0,c.width,c.height);return c.toDataURL('image/png').split(',')[1]});
+await page.locator('#gallery').setInputFiles({name:'test.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});await page.waitForFunction(()=>document.getElementById('status').textContent.includes('reçue'));
+if(uploads.length!==1||uploads[0][0]!==255||uploads[0][1]!==216)throw Error('JPEG conversion/upload failed');
+const dims=await page.locator('.photo img').evaluate(i=>({w:i.naturalWidth,h:i.naturalHeight}));if(dims.w!==2400||dims.h!==1200)throw Error('Wrong resize '+JSON.stringify(dims));
+if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Horizontal overflow');
+if(errors.length)throw Error(errors.join('\n'));await page.screenshot({path:'phone-received.png',fullPage:true});console.log('PASS mobile upload, JPEG conversion, 2400px resize, acknowledgement, gallery, no horizontal overflow, no JS errors');await browser.close();})();
