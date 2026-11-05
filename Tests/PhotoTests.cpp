@@ -8,7 +8,8 @@ using namespace juce;
 static void check(bool condition,const char* label){if(!condition){std::cerr<<"FAIL: "<<label<<std::endl;std::exit(1);}std::cout<<"PASS: "<<label<<std::endl;}
 int main(int argc,char** argv){
     if(argc>1 && std::string(argv[1])=="--serve") {
-        PhotoStore store;LocalServer server(store,[]{});
+        PhotoStore store, secondStore;LocalServer server(store,[]{}), second(secondStore,[]{});
+        if(second.start("127.0.0.1").isNotEmpty())return 1;
         auto error=server.start("127.0.0.1");if(error.isNotEmpty())return 1;
         std::cout<<server.url()<<std::endl;
         std::string line;std::getline(std::cin,line);return 0;
@@ -54,6 +55,18 @@ int main(int argc,char** argv){
     auto gallery=client.Get(path+"/api/photos");check(gallery && JSON::parse(gallery->body)["photos"].size()==2,"phone gallery lists photos");
     auto download=client.Get(path+"/api/image/"+id.toStdString());check(download && download->status==200 && download->body==std::string(static_cast<const char*>(png.getData()),png.getDataSize()),"image fetched byte-identically");
     MemoryBlock remoteState;a.save(remoteState);PhotoStore reopened;check(reopened.restore(remoteState.getData(),remoteState.getSize()) && reopened.snapshot().photos.size()==2,"received photo survives save/reopen without external files");
+    PhotoStore otherStore; LocalServer other(otherStore,[]{});
+    check(other.start("127.0.0.1").isEmpty(),"second receiver starts");
+    auto instances=client.Get(path+"/api/instances");
+    check(instances && JSON::parse(instances->body).size()==2,"both active instances discoverable");
+    auto hidden=client.Get("/wrong/api/instances");
+    check(hidden && hidden->status==404,"instance URLs require valid token");
+    URL otherUrl(other.url()); httplib::Client otherClient("127.0.0.1",otherUrl.getPort());
+    auto otherPath="/"+otherUrl.getSubPath().toStdString()+"api/upload?name=Other";
+    auto otherUpload=otherClient.Post(otherPath,std::string(static_cast<const char*>(png.getData()),png.getDataSize()),"image/png");
+    check(otherUpload && otherUpload->status==201 && otherStore.snapshot().photos.size()==1 && a.snapshot().photos.size()==2,"selected receiver keeps photos isolated");
+    other.stop(); instances=client.Get(path+"/api/instances");
+    check(instances && JSON::parse(instances->body).size()==1,"stopped instance removed from chooser");
     auto old=server.url();server.stop();check(server.start("127.0.0.1").isEmpty() && server.url()!=old,"new connection token on restart");server.stop();
     check(b.erase(id) && b.snapshot().photos.empty(),"delete photo");MemoryBlock empty;b.save(empty);check(reopened.restore(empty.getData(),empty.getSize()) && reopened.snapshot().photos.empty(),"empty state clears prior photos");
     std::cout<<"All state and local network tests passed.\n";

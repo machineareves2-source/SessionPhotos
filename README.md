@@ -3,13 +3,11 @@
 Plugin indépendant de documentation de session pour Benjamin Mandeau.
 Code et interface originaux ; aucun code ni élément graphique de Big Notes n'est utilisé.
 
-## Télécharger le VST3 Windows
+## État de cette livraison
 
-Ouvrir [GitHub Actions](https://github.com/machineareves2-source/SessionPhotos/actions/workflows/build.yml), sélectionner une compilation réussie (coche verte), puis télécharger l’artefact **SessionPhotos-Windows-VST3**. Extraire le ZIP : il contient le dossier complet **Session Photos.vst3** et ce mode d’emploi.
+Ce paquet est le **projet source**, pas un installateur Windows. Le VST3 Windows doit être compilé avec Visual Studio ou le workflow GitHub Actions fourni. Les validations réalisées sont consignées dans VALIDATION.md. La validation réelle dans REAPER Windows et sur le Samsung reste nécessaire.
 
-Le dépôt contient les sources ; l’artefact GitHub Actions contient le plugin compilé. La validation réelle dans REAPER Windows et sur le téléphone reste nécessaire avant un recall important.
-
-## Installation et utilisation
+## Utilisation après compilation
 
 1. Copier le dossier complet **Session Photos.vst3** dans `C:\Program Files\Common Files\VST3\` (ou un dossier VST3 déjà scanné par REAPER).
 2. Dans REAPER, relancer la recherche des plugins si nécessaire, puis insérer **Session Photos** sur une piste. Le plugin ne modifie pas les échantillons audio.
@@ -25,7 +23,7 @@ Fermer le navigateur n'enregistre pas le projet. L'accusé de réception signifi
 ## Conservation des images
 
 - Les octets de chaque image reçue sont embarqués dans la session. Aucun chemin de fichier externe n'est nécessaire pour la rouvrir.
-- Depuis le téléphone, la copie envoyée est convertie en JPEG qualité 90 %, redimensionnée à 1 600, 2 400 (défaut) ou 3 600 pixels de côté maximal. L'original du téléphone reste intact. C'est **la copie envoyée** qui est embarquée, pas la photo originale pleine résolution.
+- Depuis le téléphone, la copie envoyée est convertie en JPEG qualité 90 %, redimensionnée à 800 (défaut), 1 200, 1 600, 2 400 ou 3 600 pixels de côté maximal. L'original du téléphone reste intact. C'est **la copie envoyée** qui est embarquée, pas la photo originale pleine résolution.
 - L'import depuis le PC conserve les octets JPEG/PNG d'origine. L'orientation EXIF des imports directs n'est pas appliquée automatiquement dans cette version : utiliser **Tourner** si nécessaire.
 - Maximum **64 photos et 64 Mio de données d'image par instance**, **8 Mio / 24 mégapixels par photo reçue**. Les projets REAPER peuvent devenir plus gros que ce total à cause de leur encodage.
 - Les notes (16 000 caractères par image), titres (160 caractères) et rotations sont conservés. Le zoom/pan est un réglage temporaire de consultation.
@@ -59,7 +57,7 @@ ctest --test-dir build -C Release --output-on-failure
 
 Résultat : `build/SessionPhotos_artefacts/Release/VST3/Session Photos.vst3`.
 
-Le workflow `.github/workflows/build.yml` réalise la compilation Windows et les tests, puis fournit le VST3 dans les artefacts. Les sources et les compilations sont hébergées dans [machineareves2-source/SessionPhotos](https://github.com/machineareves2-source/SessionPhotos).
+Le workflow `.github/workflows/build.yml` réalise la compilation Windows et les tests, puis fournit le VST3 dans les artefacts. Ce projet n'est pas publié automatiquement sur un compte GitHub.
 
 ## Architecture et garanties vérifiables
 
@@ -68,3 +66,7 @@ Le callback audio est un passage direct sans traitement, verrou, allocation, dé
 La sauvegarde sérialise un instantané cohérent ; la restauration valide entièrement un état temporaire avant de remplacer les photos existantes. Un état tronqué ou invalide est rejeté, sans remplacement partiel. Les dimensions d'images sont contrôlées avant décodage. Les uploads sont limités en taille. Aucune API réseau de suppression ou d'édition des notes n'est exposée dans cette version ; les notes se modifient sur le PC.
 
 La page téléphone est une interface web locale intégrée au binaire, pas une application Play Store ni une PWA hors ligne.
+
+### Choisir une instance depuis le téléphone
+
+Le menu « Envoyer vers » liste les réceptions actives sur la même adresse réseau et dans le même processus du DAW. La liste est actualisée toutes les 5 secondes. Le nom inclut le titre de la première photo pour identifier la destination. Les instances isolées dans des processus séparés nécessitent leur propre QR code. Le changement est bloqué pendant un envoi.

@@ -2,6 +2,14 @@
 #include "LocalServer.h"
 #include <BinaryData.h>
 #include <random>
+#include <mutex>
+#include <map>
+namespace {
+std::mutex receiversMutex;
+struct Receiver { juce::String url, address; PhotoStore* store; unsigned int number; };
+std::map<LocalServer*, Receiver> receivers;
+unsigned int nextReceiver = 0;
+}
 using namespace juce;
 LocalServer::LocalServer(PhotoStore& s,std::function<void()> cb):store(s),changed(std::move(cb)){}
 LocalServer::~LocalServer(){stop();}
@@ -43,6 +51,23 @@ String LocalServer::start(const String& address) {
         auto* o=new DynamicObject();o->setProperty("photos",var(photos));o->setProperty("bytes",int64(s.bytes));o->setProperty("revision",int64(s.revision));
         res.set_content(JSON::toString(var(o)).toStdString(),"application/json");
     });
+    server->Get(root+"/api/instances",[this,address](const auto&,auto& res) {
+        Array<var> instances;
+        std::lock_guard<std::mutex> lock(receiversMutex);
+        for (const auto& entry : receivers) {
+            const auto& receiver = entry.second;
+            if (receiver.address != address) continue;
+            auto* item = new DynamicObject();
+            auto photos = receiver.store->snapshot();
+            String name = "Instance " + String(receiver.number);
+            if (!photos.photos.empty()) name += " · " + photos.photos.front()->title;
+            item->setProperty("name",name);
+            item->setProperty("url",receiver.url);
+            item->setProperty("current",entry.first == this);
+            instances.add(var(item));
+        }
+        res.set_content(JSON::toString(var(instances)).toStdString(),"application/json");
+    });
     server->Post(root+"/api/upload",[this](const auto& req,auto& res) {
         String id; auto name=String::fromUTF8(req.get_param_value("name").c_str());
         auto error=store.add(req.body.data(),req.body.size(),name,&id);
@@ -60,6 +85,9 @@ String LocalServer::start(const String& address) {
     currentUrl=String(origin+root+"/");
     worker=std::thread([this]{server->listen_after_bind();});
     server->wait_until_ready();
+    { std::lock_guard<std::mutex> lock(receiversMutex); receivers[this] = {currentUrl,address,&store,++nextReceiver}; }
     return {};
 }
-void LocalServer::stop(){if(server){server->stop();if(worker.joinable())worker.join();server.reset();}currentUrl.clear();}
+void LocalServer::stop(){
+    { std::lock_guard<std::mutex> lock(receiversMutex); receivers.erase(this); }
+    if(server){server->stop();if(worker.joinable())worker.join();server.reset();}currentUrl.clear();}
