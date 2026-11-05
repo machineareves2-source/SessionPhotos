@@ -60,7 +60,7 @@ String LocalServer::start(const String& address) {
             auto* item = new DynamicObject();
             auto photos = receiver.store->snapshot();
             String name = "Instance " + String(receiver.number);
-            if (!photos.photos.empty()) name += " · " + photos.photos.front()->title;
+            if (!photos.photos.empty()) name += " - " + photos.photos.front()->title;
             item->setProperty("name",name);
             item->setProperty("url",receiver.url);
             item->setProperty("current",entry.first == this);
