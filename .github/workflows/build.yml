@@ -38,3 +38,34 @@ jobs:
           path: package/
           if-no-files-found: error
           retention-days: 30
+  macos:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure universal Intel and Apple Silicon
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64' -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+      - name: Build
+        run: cmake --build build --config Release --parallel 3
+      - name: State and network tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Verify and package
+        run: |
+          mkdir -p package
+          cp -R "build/SessionPhotos_artefacts/Release/VST3/Session Photos.vst3" package/
+          cp -R "build/SessionPhotos_artefacts/Release/AU/Session Photos.component" package/
+          for bundle in "package/Session Photos.vst3" "package/Session Photos.component"; do
+            codesign --force --deep --sign - "$bundle"
+            codesign --verify --deep --strict "$bundle"
+            lipo -verify_arch arm64 x86_64 "$bundle/Contents/MacOS/Session Photos"
+          done
+          cp LICENSE THIRD_PARTY.md package/
+          echo "Sources: https://github.com/$GITHUB_REPOSITORY/tree/$GITHUB_SHA" > package/SOURCES.txt
+          cp MAC_AAX.md package/LIRE-MOI.md
+          ditto -c -k --sequesterRsrc --keepParent package SessionPhotos_Mac_Universal.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SessionPhotos-Mac-Universal
+          path: SessionPhotos_Mac_Universal.zip
+          if-no-files-found: error
+          retention-days: 30
