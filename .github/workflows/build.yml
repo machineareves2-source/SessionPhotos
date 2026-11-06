@@ -57,7 +57,7 @@ jobs:
           for bundle in "package/Session Photos.vst3" "package/Session Photos.component"; do
             codesign --force --deep --sign - "$bundle"
             codesign --verify --deep --strict "$bundle"
-            lipo -verify_arch arm64 x86_64 "$bundle/Contents/MacOS/Session Photos"
+            lipo "$bundle/Contents/MacOS/Session Photos" -verify_arch arm64 x86_64
           done
           cp LICENSE THIRD_PARTY.md package/
           echo "Sources: https://github.com/$GITHUB_REPOSITORY/tree/$GITHUB_SHA" > package/SOURCES.txt
